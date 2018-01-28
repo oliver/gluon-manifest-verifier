@@ -119,3 +119,5 @@ foreach ($signatures as $sig)
     $sigIndex++;
 }
 printInfo("SUMMARY: $numTotalSignatures total signatures, $numValidSigs valid signatures, $numErrors errors, ".strlen($payload)." bytes in file '$manifestPath'.");
+
+unlink($payloadFile);
