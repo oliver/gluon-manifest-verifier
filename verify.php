@@ -60,6 +60,11 @@ $manifestPath = "$MANIFEST_BASE/$manifestParam";
 
 # download file
 $manifestLines = file($manifestPath);
+if ($manifestLines == false)
+{
+    printError("invalid manifest file '$manifestParam' specified (full path: '$manifestPath')");
+    exit(1);
+}
 
 # parse file into payload and signatures
 $payload = "";
