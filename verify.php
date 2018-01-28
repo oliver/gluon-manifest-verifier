@@ -8,6 +8,15 @@ $PUBLIC_KEYS = $configArray["public_keys"];
 if (!$PUBLIC_KEYS)
     die("Missing config section 'public_keys'");
 
+
+$numErrors = 0;
+function printError ($message)
+{
+    global $numErrors;
+    echo "ERROR: $message\n";
+    $numErrors++;
+}
+
 #$manifestPath = "$MANIFEST_BASE/" . $_GET["manifest"];
 #$manifestPath = "$MANIFEST_BASE/" . "testing/sysupgrade/testing.manifest";
 #$manifestPath = "$MANIFEST_BASE/" . "stable/sysupgrade/stable.manifest";
@@ -21,7 +30,6 @@ $manifestLines = file($manifestPath);
 $payload = "";
 $signatures = array();
 $inSignaturePart = false;
-$numErrors = 0;
 foreach ($manifestLines as $line)
 {
     #echo "$line";
@@ -38,10 +46,7 @@ foreach ($manifestLines as $line)
     }
 }
 if (!$inSignaturePart)
-{
-    echo "ERROR: no start-of-signatures marker found.\n";
-    $numErrors++;
-}
+    printError("no start-of-signatures marker found.");
 
 $payloadFile = tempnam(sys_get_temp_dir(), 'gluon-verify-payload');
 file_put_contents($payloadFile, $payload);
@@ -71,15 +76,9 @@ foreach ($signatures as $sig)
         }
     }
     if ($numMatchingKeys == 0)
-    {
-        echo "ERROR: signature $sigIndex is invalid or belongs to unknown public key. Signature='$sig'\n";
-        $numErrors++;
-    }
+        printError("signature $sigIndex is invalid or belongs to unknown public key. Signature='$sig'");
     elseif ($numMatchingKeys != 1)
-    {
-        echo "ERROR: signature $sigIndex matches multiple public keys. Signature='$sig'\n";
-        $numErrors++;
-    }
+        printError("signature $sigIndex matches multiple public keys. Signature='$sig'");
     $sigIndex++;
 }
 echo "SUMMARY: $numTotalSignatures total signatures, $numValidSigs valid signatures, $numErrors errors, ".strlen($payload)." bytes in file '$manifestPath'.\n";
