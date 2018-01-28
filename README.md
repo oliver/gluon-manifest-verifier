@@ -8,7 +8,6 @@ Config Options:
 
 URL Parameters:
 * manifest: relative path to the manifest file that shall be checked
-* format: either "text" (the default) to display textual output, or "json" to display JSON output
 
 If an error is encountered (eg. manifest could not be read, or signature is invalid), the text "ERROR: " will be included in the output.
 Signatures are verified against a list of known public keys.

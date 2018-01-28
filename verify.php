@@ -72,7 +72,6 @@ $signatures = array();
 $inSignaturePart = false;
 foreach ($manifestLines as $line)
 {
-    #echo "$line";
     if (!$inSignaturePart)
     {
         if ($line == "---\n")
@@ -97,7 +96,6 @@ $numTotalSignatures = 0;
 $numValidSigs = 0;
 foreach ($signatures as $sig)
 {
-    #echo "checking signature: $sig\n";
     $numTotalSignatures++;
     $numMatchingKeys = 0;
     foreach ($PUBLIC_KEYS as $keyOwner => $pubKey)
@@ -107,7 +105,6 @@ foreach ($signatures as $sig)
         $execOutput = array();
         $execResult = -1;
         exec($command, $execOutput, $execResult);
-        #echo "verification result for owner $keyOwner: $execResult\n";
         if ($execResult == 0)
         {
             printInfo("VALID: signature $sigIndex is valid and was created by '$keyOwner'");
