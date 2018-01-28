@@ -8,20 +8,55 @@ $PUBLIC_KEYS = $configArray["public_keys"];
 if (!$PUBLIC_KEYS)
     die("Missing config section 'public_keys'");
 
+function isRunningOnCommandLine ()
+{
+    return (php_sapi_name() == "cli");
+}
 
 $numErrors = 0;
 function printError ($message)
 {
     global $numErrors;
-    echo "ERROR: $message\n";
+    if (isRunningOnCommandLine())
+        echo "ERROR: $message\n";
+    else
+        echo "<p>ERROR: $message</p>\n";
     $numErrors++;
 }
 
-#$manifestPath = "$MANIFEST_BASE/" . $_GET["manifest"];
-#$manifestPath = "$MANIFEST_BASE/" . "testing/sysupgrade/testing.manifest";
-#$manifestPath = "$MANIFEST_BASE/" . "stable/sysupgrade/stable.manifest";
-#$manifestPath = "stable.manifest";
-$manifestPath = "testing.manifest";
+function printInfo ($message)
+{
+    if (isRunningOnCommandLine())
+        echo "$message\n";
+    else
+        echo "$message<br>\n";
+}
+
+
+# parse parameters
+if (isRunningOnCommandLine())
+{
+    if (count($argv) <= 1)
+    {
+        printError("manifest path must be specified");
+        echo "Usage: $argv[0] <relative path to manifest file>
+
+Path must be relative to $MANIFEST_BASE .
+";
+        exit(1);
+    }
+    $manifestParam = $argv[1];
+}
+else
+{
+    if (!isset($_GET["manifest"]))
+    {
+        printError("parameter 'manifest' must be specified");
+        exit(1);
+    }
+    $manifestParam = $_GET["manifest"];
+}
+$manifestPath = "$MANIFEST_BASE/$manifestParam";
 
 # download file
 $manifestLines = file($manifestPath);
@@ -70,7 +105,7 @@ foreach ($signatures as $sig)
         #echo "verification result for owner $keyOwner: $execResult\n";
         if ($execResult == 0)
         {
-            echo "VALID: signature $sigIndex is valid and was created by '$keyOwner'\n";
+            printInfo("VALID: signature $sigIndex is valid and was created by '$keyOwner'");
             $numMatchingKeys++;
             $numValidSigs++;
         }
@@ -81,4 +116,4 @@ foreach ($signatures as $sig)
         printError("signature $sigIndex matches multiple public keys. Signature='$sig'");
     $sigIndex++;
 }
-echo "SUMMARY: $numTotalSignatures total signatures, $numValidSigs valid signatures, $numErrors errors, ".strlen($payload)." bytes in file '$manifestPath'.\n";
+printInfo("SUMMARY: $numTotalSignatures total signatures, $numValidSigs valid signatures, $numErrors errors, ".strlen($payload)." bytes in file '$manifestPath'.");
