@@ -137,6 +137,6 @@ foreach ($signatures as $sig)
         printError("signature $sigIndex matches multiple public keys. Signature='$sig'");
     $sigIndex++;
 }
-printInfo("SUMMARY: $numTotalSignatures total signatures, $numValidSigs valid signatures, $numErrors errors, ".strlen($payload)." bytes in file '$manifestPath'.");
+printInfo("SUMMARY: $numTotalSignatures total signatures, $numValidSigs valid signatures, $numErrors errors, ".strlen($payload)." payload bytes in file '$manifestPath'.");
 
 unlink($payloadFile);
