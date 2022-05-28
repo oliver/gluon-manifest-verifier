@@ -117,24 +117,33 @@ foreach ($signatures as $sig)
 {
     $numTotalSignatures++;
     $numMatchingKeys = 0;
-    foreach ($PUBLIC_KEYS as $keyOwner => $pubKey)
+    if ($sig == "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
     {
-        $command = "ecdsaverify -s $sig -p $pubKey $payloadFile";
-        #echo "command: $command\n";
-        $execOutput = array();
-        $execResult = -1;
-        exec($command, $execOutput, $execResult);
-        if ($execResult == 0)
-        {
-            printInfo("VALID: signature $sigIndex is valid and was created by '$keyOwner'");
-            $numMatchingKeys++;
-            $numValidSigs++;
-        }
+        // Ignore signatures that try to exploit CVE-2022-24884 ("Improper verification of cryptographic signature in Gluon's autoupdater"),
+        // since we use this signature in some cases as "wildcard" to ensure that all nodes get the security update that fixes this bug.
+        printInfo("IGNORING: signature $sigIndex is only valid with CVE-2022-24884");
     }
-    if ($numMatchingKeys == 0)
-        printError("signature $sigIndex is invalid or belongs to unknown public key. Signature='$sig'");
-    elseif ($numMatchingKeys != 1)
-        printError("signature $sigIndex matches multiple public keys. Signature='$sig'");
+    else
+    {
+        foreach ($PUBLIC_KEYS as $keyOwner => $pubKey)
+        {
+            $command = "ecdsaverify -s $sig -p $pubKey $payloadFile";
+            #echo "command: $command\n";
+            $execOutput = array();
+            $execResult = -1;
+            exec($command, $execOutput, $execResult);
+            if ($execResult == 0)
+            {
+                printInfo("VALID: signature $sigIndex is valid and was created by '$keyOwner'");
+                $numMatchingKeys++;
+                $numValidSigs++;
+            }
+        }
+        if ($numMatchingKeys == 0)
+            printError("signature $sigIndex is invalid or belongs to unknown public key. Signature='$sig'");
+        elseif ($numMatchingKeys != 1)
+            printError("signature $sigIndex matches multiple public keys. Signature='$sig'");
+    }
     $sigIndex++;
 }
 printInfo("SUMMARY: $numTotalSignatures total signatures, $numValidSigs valid signatures, $numErrors errors, ".strlen($payload)." payload bytes in file '$manifestPath'.");
